@@ -1,0 +1,8 @@
+pandas
+numpy
+flask
+mysql-connector-python
+openpyxl
+pywin32
+chardet
+werkzeug
