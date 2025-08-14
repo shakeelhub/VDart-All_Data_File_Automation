@@ -92,4 +92,4 @@ Delivered a robust, organization-wide accessible platform 🌍.
 
 𝐂𝐫𝐞𝐝𝐢𝐭𝐬 & 𝐀𝐜𝐤𝐧𝐨𝐰𝐥𝐞𝐝𝐠𝐦𝐞𝐧𝐭𝐬
 
-This project was proudly crafted by me and my partner-in-code Sachin 🤝 during our 3-month internship at VDart 🏢. We battled giant Excel files 📄, tamed wild data formats 🐉, and wrestled with network quirks 🔌 — all in the name of automation glory 🚀. The result? A company-level win 🏆 that turned hours of manual drudgery into minutes of smooth, automated magic ✨.
+This project was proudly crafted by me and my partner-in-code Sachin 🤝 during our 3-month internship at VDart 🏢(a firm recognized for breaking into the Top US Staffing Firms list for six consecutive years in a turbulent market). We battled giant Excel files 📄, tamed wild data formats 🐉, and wrestled with network quirks 🔌 — all in the name of automation glory 🚀. The result? A company-level win 🏆 that turned hours of manual drudgery into minutes of smooth, automated magic ✨.
