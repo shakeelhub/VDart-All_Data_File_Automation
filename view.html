@@ -1,0 +1,2564 @@
+{% extends "base.html" %}
+
+{% block title %}View Data - DataSync Pro{% endblock %}
+
+{% block content %}
+<div class="modern-container fade-in">
+    <!-- Enhanced Header Section -->
+    <div class="header-section">
+        <div class="header-content">
+            <div class="header-text">
+                <h1 class="page-title">Data Analytics Dashboard</h1>
+                <p class="page-subtitle">Explore, filter, and analyze your processed data with advanced tools</p>
+            </div>
+            <div class="header-actions">
+                <!-- Table Selector Dropdown -->
+                <div class="table-selector">
+                    <label class="selector-label">Table:</label>
+                    <select class="form-select-modern table-select" id="tableSelector">
+                        <option value="master" selected>Master Table</option>
+                        <option value="closure">Closure Table</option>
+                    </select>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot active"></span>
+                    <span class="status-text">Database Connected</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div class="dashboard-content" id="dataViewSection">
+        <!-- Loading State -->
+        <div class="loading-state" id="loadingMessage">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+            <h3 class="loading-title">Loading Your Data</h3>
+            <p class="loading-text">Retrieving records from the database...</p>
+        </div>
+
+        <!-- No Data State -->
+        <div class="empty-state" id="noDataMessage" style="display: none;">
+            <div class="empty-icon">
+                <i class="fas fa-database"></i>
+            </div>
+            <h3 class="empty-title">No Data Available</h3>
+            <p class="empty-text">Upload and process your files to start analyzing data</p>
+            <a href="/upload" class="btn-primary-large">
+                <i class="fas fa-upload"></i>
+                <span>Upload Files</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern Design System */
+    :root {
+        --primary-600: #2563eb;
+        --primary-500: #3b82f6;
+        --primary-50: #eff6ff;
+        --success-600: #059669;
+        --success-500: #10b981;
+        --success-50: #ecfdf5;
+        --gray-900: #111827;
+        --gray-800: #1f2937;
+        --gray-700: #374151;
+        --gray-600: #4b5563;
+        --gray-500: #6b7280;
+        --gray-400: #9ca3af;
+        --gray-300: #d1d5db;
+        --gray-200: #e5e7eb;
+        --gray-100: #f3f4f6;
+        --gray-50: #f9fafb;
+        --white: #ffffff;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --radius-sm: 0.375rem;
+        --radius-md: 0.5rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 1rem;
+    }
+
+    /* Global Improvements */
+    body {
+        background: linear-gradient(135deg, #f8fafc 0%, #e5e7eb 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--gray-800);
+        line-height: 1.6;
+    }
+
+    .modern-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* Enhanced Header */
+    .header-section {
+        background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--gray-900) 0%, var(--gray-700) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 0.5rem 0;
+        letter-spacing: -0.025em;
+    }
+
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: var(--gray-600);
+        margin: 0;
+        font-weight: 400;
+    }
+
+    /* Table Selector Styles */
+
+    /* Add to your CSS */
+.active-filters-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--primary-500);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+    .table-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: var(--white);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--gray-300);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .selector-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--gray-700);
+    }
+
+    .table-select {
+        min-width: 150px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        background: var(--gray-50);
+        border: 1px solid var(--gray-300);
+        color: var(--gray-900);
+    }
+
+    .table-select:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px var(--primary-50);
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--success-50);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--success-200);
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--success-500);
+        animation: pulse 2s infinite;
+    }
+
+    .status-text {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--success-600);
+    }
+
+    /* filter styles */
+    /* Add these styles for filter content */
+.text-filter-container,
+.date-filter-container,
+.number-filter-container,
+.checkbox-filter-container {
+    width: 100%;
+}
+
+.filter-text-input,
+.filter-date-input,
+.filter-number-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+.filter-help-text {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: 0.5rem;
+}
+
+.date-input-group,
+.number-input-group {
+    margin-bottom: 0.75rem;
+}
+
+.date-label,
+.number-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: 0.25rem;
+}
+
+/* Checkbox filter styles */
+.filter-search-box {
+    margin-bottom: 0.75rem;
+}
+
+.filter-search-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+.filter-select-all {
+    padding: 0.5rem;
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.5rem;
+}
+
+.filter-select-all label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.filter-values-list {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    background: var(--white);
+}
+
+.filter-value-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.filter-value-item:hover {
+    background: var(--gray-50);
+}
+
+.filter-value-item:last-child {
+    border-bottom: none;
+}
+
+.filter-checkbox {
+    flex-shrink: 0;
+}
+
+.filter-value-text {
+    font-size: 0.875rem;
+    color: var(--gray-700);
+}
+
+.filter-stats {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+    /* Modern Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-500), var(--success-500));
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--white);
+    }
+
+    .stat-icon.submissions {
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    }
+
+    .stat-icon.client-submissions {
+        background: linear-gradient(135deg, var(--success-500), var(--success-600));
+    }
+
+    .stat-icon.interviews {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-meta {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+    }
+
+    /* Modern Table Container */
+    .table-section {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, var(--gray-50) 0%, var(--white) 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .table-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .table-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    /* Modern Form Controls */
+    .control-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .control-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        white-space: nowrap;
+    }
+
+    .form-select-modern {
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        background: var(--white);
+        color: var(--gray-900);
+        transition: all 0.2s ease;
+        min-width: 80px;
+    }
+
+    .form-select-modern:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px var(--primary-50);
+    }
+
+    /* Modern Buttons */
+    .btn-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: var(--radius-md);
+        border: 1px solid;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .btn-filter {
+        background: var(--white);
+        border-color: var(--gray-300);
+        color: var(--gray-700);
+    }
+
+    .btn-filter:hover {
+        background: var(--gray-50);
+        border-color: var(--gray-400);
+    }
+
+    .btn-filter.active {
+        background: var(--primary-50);
+        border-color: var(--primary-500);
+        color: var(--primary-700);
+    }
+
+    .btn-download {
+        background: var(--success-500);
+        border-color: var(--success-500);
+        color: var(--white);
+    }
+
+    .btn-download:hover {
+        background: var(--success-600);
+        border-color: var(--success-600);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-columns {
+        background: var(--white);
+        border-color: var(--primary-300);
+        color: var(--primary-700);
+    }
+
+    .btn-columns:hover {
+        background: var(--primary-50);
+        border-color: var(--primary-500);
+    }
+
+    /* Modern Dropdowns */
+    .dropdown-modern {
+        position: relative;
+    }
+
+    .dropdown-menu-modern {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        padding: 1rem;
+        min-width: 280px;
+        z-index: 1000;
+        display: none;
+    }
+
+    .dropdown-header-modern {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Enhanced Table */
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .modern-table thead th {
+        background: linear-gradient(135deg, var(--gray-50) 0%, var(--white) 100%);
+        color: var(--gray-900);
+        font-weight: 700;
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 2px solid var(--gray-200);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        white-space: nowrap;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .modern-table tbody td {
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid var(--gray-100);
+        color: var(--gray-700);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+
+    .modern-table tbody tr:hover {
+        background: var(--primary-50);
+    }
+
+    .table-container-modern {
+        max-height: 600px;
+        overflow: auto;
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
+
+    /* Loading States */
+    .loading-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+    }
+
+    .loading-spinner {
+        margin-bottom: 1.5rem;
+    }
+
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid var(--gray-200);
+        border-top: 4px solid var(--primary-500);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    .loading-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .loading-text {
+        color: var(--gray-600);
+        font-size: 1rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--gray-500);
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        color: var(--gray-600);
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .btn-primary-large {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        color: var(--white);
+        border-radius: var(--radius-lg);
+        font-weight: 700;
+        font-size: 1.125rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary-large:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        color: var(--white);
+    }
+
+    /* Animations */
+    .fade-in {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+
+    /* For table filters  */
+    /* Filter Icon Styles */
+.column-header-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.column-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.filter-icon {
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    color: var(--gray-500);
+    font-size: 0.875rem;
+}
+
+.filter-icon:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.filter-icon.active {
+    color: var(--primary-500);
+    background: var(--primary-50);
+}
+
+/* Filter Dropdown Styles */
+.filter-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    min-width: 250px;
+    max-width: 300px;
+    z-index: 1000;
+    display: none;
+    margin-top: 0.5rem;
+}
+
+.filter-dropdown.active {
+    display: block;
+}
+
+.th-wrapper {
+    position: relative;
+}
+
+/* Add these styles to your existing CSS */
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.filter-title {
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.filter-close {
+    background: none;
+    border: none;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 0.25rem;
+    font-size: 1rem;
+}
+
+.filter-close:hover {
+    color: var(--gray-700);
+}
+
+.filter-content {
+    padding: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.filter-loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--gray-500);
+}
+
+.filter-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.btn-filter-action {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-300);
+    background: var(--white);
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-filter-action:hover {
+    background: var(--gray-50);
+}
+
+.btn-apply {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+    color: var(--white);
+}
+
+.btn-apply:hover {
+    background: var(--primary-600);
+}
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .modern-container {
+            padding: 1rem;
+        }
+
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .table-controls {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+            gap: 0.75rem;
+        }
+
+        .table-selector {
+            width: 100%;
+        }
+
+        .table-select {
+            width: 100%;
+        }
+
+        /* Add error state styles */
+.filter-error {
+    text-align: center;
+    padding: 2rem;
+    color: var(--red-600, #dc2626);
+}
+
+.filter-error i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const priorityFilterColumns = {
+    master: ['year', 'date', 'client', 'emp_id', 'team_member_name', 'margin'],
+    closure: ['Year', 'Date', 'Candidate Name', 'Paperwork Source', 'Client', 
+              'End Client', 'Client Manager', 'Recruiters Name', 'Employee ID', 
+              'Margin', 'Origin Source']
+};
+    let tableData = null;
+    let filteredData = null;
+    let dateColumn = null;
+    let currentTable = 'master'; // Track current table
+
+    let activeColumnFilters = {
+    master: {},
+    closure: {}
+};
+
+// Store unique values for each column (to avoid repeated fetching)
+let columnUniqueValues = {
+    master: {},
+    closure: {}
+};
+
+    // Table configurations
+    const tableConfigs = {
+        master: {
+            dateColumn: 'date',
+            downloadFile: 'master_table_final.csv',
+            displayName: 'Master Table'
+        },
+        closure: {
+            dateColumn: 'Date',
+            downloadFile: 'closure_table.csv',
+            displayName: 'Closure Table'
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Store initial HTML state
+        const dataViewSection = document.getElementById('dataViewSection');
+        window.initialDataViewHTML = dataViewSection.innerHTML;
+
+        // Initialize table selector
+        document.getElementById('tableSelector').addEventListener('change', function (e) {
+            console.log('🔄 TABLE SELECTOR CHANGED');
+            console.log('🔄 New value:', e.target.value);
+            console.log('🔄 Old currentTable:', currentTable);
+
+            currentTable = e.target.value;
+
+            console.log('🔄 New currentTable:', currentTable);
+            console.log('🔄 About to call loadData()...');
+
+            // Restore initial HTML state before loading new data
+            const dataViewSection = document.getElementById('dataViewSection');
+            dataViewSection.innerHTML = window.initialDataViewHTML;
+
+            loadData();
+        });
+
+        loadData();
+    });
+
+    function loadData() {
+        const loadingMessage = document.getElementById('loadingMessage');
+        const noDataMessage = document.getElementById('noDataMessage');
+
+        // Show loading state
+        if (loadingMessage) loadingMessage.style.display = 'block';
+        if (noDataMessage) noDataMessage.style.display = 'none';
+
+        // Clear previous data
+        tableData = null;
+        filteredData = null;
+        dateColumn = null;
+
+        // Use query parameters for both master and closure
+        const previewUrl = `/get_data_preview?table=${currentTable}`;
+
+        console.log('🔄 Loading from URL:', previewUrl);
+        console.log('📊 Current table:', currentTable);
+
+        // ADD THIS DETAILED FETCH LOGGING
+        fetch(previewUrl)
+            .then(response => {
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', response.headers);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(previewData => {
+                console.log('📊 Raw response:', previewData);
+
+                // Also fetch metrics
+                return fetch('/get_full_metrics')
+                    .then(r => r.json())
+                    .then(metricsData => {
+                        return { previewData, metricsData };
+                    });
+            })
+            .then(({ previewData, metricsData }) => {
+                console.log(`📊 Preview data received for ${currentTable}:`, previewData);
+                console.log('📊 Table loaded from backend:', previewData.summary?.table_name);
+                console.log('📊 Number of columns:', previewData.summary?.total_columns);
+                console.log('📊 First 5 columns:', previewData.summary?.columns?.slice(0, 5));
+                console.log('✅ Full metrics received:', metricsData);
+
+                // CHECK IF WE GOT THE RIGHT TABLE
+                if (currentTable === 'closure' && previewData.summary?.columns?.includes('emp_id')) {
+                    console.error('❌ ERROR: Requested closure but got master table data!');
+                    console.error('❌ Current URL:', window.location.href);
+                    console.error('❌ Fetch URL:', previewUrl);
+                }
+
+                if (previewData.error || !previewData.success) {
+                    console.log('❌ No data or error in preview:', previewData);
+                    if (loadingMessage) loadingMessage.style.display = 'none';
+                    if (noDataMessage) noDataMessage.style.display = 'block';
+                    return;
+                }
+
+                // Store full metrics (always from master table)
+                if (metricsData.success) {
+                    window.fullMetrics = metricsData.metrics;
+                }
+
+                // Set date column based on current table
+                if (currentTable === 'closure') {
+                    dateColumn = 'Tentative Start Date';
+                } else {
+                    dateColumn = 'date';
+                }
+                console.log(`📅 Using date column for ${currentTable}:`, dateColumn);
+
+                if (loadingMessage) loadingMessage.style.display = 'none';
+                showDataContent(previewData);
+            })
+            .catch(error => {
+                console.error('❌ Error loading data:', error);
+                console.error('❌ Error stack:', error.stack);
+                if (loadingMessage) loadingMessage.style.display = 'none';
+                if (noDataMessage) noDataMessage.style.display = 'block';
+            });
+    }
+
+    function showDataContent(data) {
+        console.log('Data received:', data);
+
+        tableData = {
+            columns: data.summary.columns || [],
+            rows: data.sample_data || [],
+            totalRecords: data.summary.total_records || 0,
+            currentPage: 1,
+            rowsPerPage: 25,
+            visibleColumns: [...(data.summary.columns || [])],
+            date_info: data.date_info || {}
+        };
+
+        console.log(`Table data stored: ${tableData.rows.length} sample records from ${tableData.totalRecords} total`);
+
+        // Always use master table metrics for stats
+        const content = buildModernStatsSection(data) +
+            buildModernTableSection();
+
+        document.getElementById('dataViewSection').innerHTML = content;
+
+        initializeTable();
+    }
+
+    function buildModernStatsSection(data) {
+        // Always use master table metrics
+        const metrics = window.fullMetrics || {
+            totalSubmissions: 0,
+            clientSubmissions: 0,
+            interviewsScheduled: 0
+        };
+        const metaText = 'From master table';
+
+        return `
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon submissions">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="totalSubmissions">${metrics.totalSubmissions.toLocaleString()}</div>
+                <div class="stat-label">Total Submissions</div>
+                <div class="stat-meta" id="submissionsMeta">${metaText}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon client-submissions">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="clientSubmissions">${metrics.clientSubmissions.toLocaleString()}</div>
+                <div class="stat-label">Client Submissions</div>
+                <div class="stat-meta" id="clientSubmissionsMeta">${metaText}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon interviews">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="interviewsScheduled">${metrics.interviewsScheduled.toLocaleString()}</div>
+                <div class="stat-label">Interviews Scheduled</div>
+                <div class="stat-meta" id="interviewsMeta">${metaText}</div>
+            </div>
+        </div>
+    `;
+    }
+
+    function buildModernTableSection() {
+        const tableName = tableConfigs[currentTable].displayName;
+
+        return `
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-title">
+                    <i class="fas fa-table"></i>
+                    ${tableName} Explorer
+                </div>
+                <div class="table-controls">
+                    <button class="btn-modern btn-clear-all" onclick="clearAllColumnFilters()" 
+        id="clearAllFiltersBtn" style="display: none;">
+    <i class="fas fa-times-circle"></i>
+    Clear All Filters
+</button>
+                    <div class="control-group">
+                        <span class="control-label">Show:</span>
+                        <select class="form-select-modern" id="rowsPerPage">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    
+                    <div class="dropdown-modern">
+                        <button class="btn-modern btn-filter" id="dateFilterBtn" onclick="toggleDateFilter()">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span id="filterBtnText">Filter</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu-modern" id="dateFilterDropdown">
+                            <div class="dropdown-header-modern">
+                                <i class="fas fa-calendar-alt"></i>
+                                Date Range Filter
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label class="control-label" style="display: block; margin-bottom: 0.5rem;">From:</label>
+                                    <input type="date" id="startDateFilter" class="form-select-modern" style="width: 100%;">
+                                </div>
+                                <div>
+                                    <label class="control-label" style="display: block; margin-bottom: 0.5rem;">To:</label>
+                                    <input type="date" id="endDateFilter" class="form-select-modern" style="width: 100%;">
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                <button class="btn-modern" style="flex: 1; background: var(--primary-500); color: white; border-color: var(--primary-500);" onclick="applyDateFilter()">
+                                    <i class="fas fa-check"></i>Apply
+                                </button>
+                                <button class="btn-modern" style="flex: 1;" onclick="clearDateFilter()">
+                                    <i class="fas fa-times"></i>Clear
+                                </button>
+                            </div>
+                            <div style="padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                                <small id="filterStatus" style="color: var(--gray-600);">No filter applied - showing sample data</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dropdown-modern">
+                        <button class="btn-modern btn-download" id="downloadBtn" onclick="toggleDownloadMenu()">
+                            <i class="fas fa-download"></i>
+                            Download
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu-modern" id="downloadDropdown" style="min-width: 250px;">
+                            <div class="dropdown-header-modern">
+                                <i class="fas fa-download"></i>
+                                Download Options
+                            </div>
+                            <button class="btn-modern" style="width: 100%; margin-bottom: 0.75rem; background: var(--success-500); color: white; border-color: var(--success-500); justify-content: flex-start;" onclick="downloadCompleteData()">
+                                <i class="fas fa-database"></i>
+                                <div style="text-align: left;">
+                                    <div>Complete Dataset</div>
+                                    <small id="completeDataInfo" style="font-weight: normal; opacity: 0.8;">All records</small>
+                                </div>
+                            </button>
+                            <button class="btn-modern" style="width: 100%; background: var(--primary-500); color: white; border-color: var(--primary-500); justify-content: flex-start;" onclick="downloadFilteredData()">
+                                <i class="fas fa-filter"></i>
+                                <div style="text-align: left;">
+                                    <div>Filtered Data</div>
+                                    <small id="filteredDataInfo" style="font-weight: normal; opacity: 0.8;">Apply filter first</small>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-modern btn-columns" onclick="toggleColumns()">
+                        <i class="fas fa-columns"></i>
+                        <span id="columnsText">Columns</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="columnControls" style="display: none; padding: 1.5rem 2rem; border-bottom: 1px solid var(--gray-200); background: var(--gray-50);">
+                <h6 style="margin-bottom: 1rem; font-weight: 700; color: var(--gray-900);">Show/Hide Columns:</h6>
+                <div id="columnCheckboxes" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;"></div>
+                <div>
+                    <button class="btn-modern" style="margin-right: 0.5rem; background: var(--primary-500); color: white; border-color: var(--primary-500);" onclick="showAllColumns()">Show All</button>
+                    <button class="btn-modern" onclick="hideAllColumns()">Hide All</button>
+                </div>
+            </div>
+            
+            <div class="table-container-modern">
+                <table class="modern-table" id="dataTable">
+                    <thead>
+                        <tr id="tableHeaders"></tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            
+            <div style="padding: 1.5rem 2rem; background: var(--gray-50); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div style="color: var(--gray-600); font-size: 0.875rem;" id="paginationInfo"></div>
+                <nav>
+                    <ul id="paginationControls" style="display: flex; list-style: none; margin: 0; padding: 0; gap: 0.25rem;"></ul>
+                </nav>
+            </div>
+        </div>
+    `;
+    }
+
+    // Date formatting function
+    function formatDateForDisplay(dateStr) {
+        if (!dateStr || dateStr === '' || dateStr === 'None' || dateStr === null) return '';
+
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return dateStr;
+
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+
+            return `${day} ${month} ${year}`;
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    // Check if column contains dates
+    function isDateColumn(columnName) {
+        const dateColumns = ['date', 'Date', 'DATE', 'created_at', 'timestamp', 'time',
+            'Tentative Start Date', 'Start_Date', 'Project_End_Date'];
+        return dateColumns.some(col => columnName.toLowerCase().includes(col.toLowerCase()));
+    }
+
+    function toggleDateFilter() {
+        const dropdown = document.getElementById('dateFilterDropdown');
+        const isVisible = dropdown.style.display !== 'none';
+
+        if (isVisible) {
+            dropdown.style.display = 'none';
+        } else {
+            dropdown.style.display = 'block';
+            setTimeout(() => {
+                document.addEventListener('click', closeDropdownOnClickOutside);
+            }, 100);
+        }
+    }
+
+    function closeDropdownOnClickOutside(event) {
+        const dropdown = document.getElementById('dateFilterDropdown');
+        const button = document.getElementById('dateFilterBtn');
+
+        if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+            dropdown.style.display = 'none';
+            document.removeEventListener('click', closeDropdownOnClickOutside);
+        }
+    }
+
+    function toggleDownloadMenu() {
+        const dropdown = document.getElementById('downloadDropdown');
+        const isVisible = dropdown.style.display !== 'none';
+
+        if (isVisible) {
+            dropdown.style.display = 'none';
+        } else {
+            dropdown.style.display = 'block';
+            setTimeout(() => {
+                document.addEventListener('click', closeDownloadDropdownOnClickOutside);
+            }, 100);
+        }
+    }
+
+    function closeDownloadDropdownOnClickOutside(event) {
+        const dropdown = document.getElementById('downloadDropdown');
+        const button = document.getElementById('downloadBtn');
+
+        if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+            dropdown.style.display = 'none';
+            document.removeEventListener('click', closeDownloadDropdownOnClickOutside);
+        }
+    }
+
+    // SERVER-SIDE FILTERING
+    function applyDateFilter() {
+        const startDate = document.getElementById('startDateFilter').value;
+        const endDate = document.getElementById('endDateFilter').value;
+        const filterBtn = document.getElementById('dateFilterBtn');
+        const filterBtnText = document.getElementById('filterBtnText');
+
+        if (!startDate && !endDate) {
+            alert('Please select at least one date (start or end)');
+            return;
+        }
+
+        filterBtnText.textContent = 'Filtering...';
+        filterBtn.disabled = true;
+
+        // FIXED: Always use the same endpoint
+        const filterUrl = '/filter_data';
+
+        fetch(filterUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                start_date: startDate,
+                end_date: endDate,
+                date_column: dateColumn,
+                table: currentTable  // Send table in body
+            })
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    console.log(`🔍 Server returned ${result.total_filtered} filtered records from ${currentTable} table`);
+
+                    filteredData = result.data;
+                    tableData.currentPage = 1;
+
+                    filterBtn.classList.add('active');
+                    filterBtnText.textContent = `Filtered (${result.total_filtered})`;
+                    filterBtn.disabled = false;
+
+                    const fromText = startDate ? new Date(startDate).toLocaleDateString() : 'start';
+                    const toText = endDate ? new Date(endDate).toLocaleDateString() : 'end';
+                    document.getElementById('filterStatus').innerHTML =
+                        `${fromText} to ${toText} • ${result.total_filtered} records found`;
+
+                    document.getElementById('dateFilterDropdown').style.display = 'none';
+
+                    renderTable();
+                    renderPagination();
+                    updateDownloadInfo();
+
+                } else {
+                    console.error('Filter error:', result.error);
+                    alert(`Filter error: ${result.error}`);
+                    filterBtn.disabled = false;
+                    filterBtnText.textContent = 'Filter';
+                }
+            })
+            .catch(error => {
+                console.error('Filter request failed:', error);
+                alert('Filter request failed. Please try again.');
+                filterBtn.disabled = false;
+                filterBtnText.textContent = 'Filter';
+            });
+    }
+
+    function clearAllColumnFilters() {
+    // Clear all active filters
+    activeColumnFilters[currentTable] = {};
+    
+    // Remove active class from all filter icons
+    document.querySelectorAll('.filter-icon.active').forEach(icon => {
+        icon.classList.remove('active');
+        icon.title = '';
+    });
+    
+    // Hide clear all button
+    const clearBtn = document.getElementById('clearAllFiltersBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    
+    // Show original data
+    filteredData = [...tableData.rows];
+    tableData.currentPage = 1;
+    renderTable();
+    renderPagination();
+    updateFilterStatus();
+    updateActiveFilterIndicators();
+}
+
+
+
+    function clearDateFilter() {
+        document.getElementById('startDateFilter').value = '';
+        document.getElementById('endDateFilter').value = '';
+
+        filteredData = [...tableData.rows];
+        tableData.currentPage = 1;
+
+        const filterBtn = document.getElementById('dateFilterBtn');
+        const filterBtnText = document.getElementById('filterBtnText');
+        filterBtn.classList.remove('active');
+        filterBtnText.textContent = 'Filter';
+
+        document.getElementById('filterStatus').innerHTML = 'No filter applied - showing all records';
+        document.getElementById('dateFilterDropdown').style.display = 'none';
+
+        renderTable();
+        renderPagination();
+        updateDownloadInfo();
+    }
+
+    function updateDownloadInfo() {
+        const completeInfo = document.getElementById('completeDataInfo');
+        const filteredInfo = document.getElementById('filteredDataInfo');
+
+        if (completeInfo) {
+            completeInfo.textContent = `${tableData.totalRecords.toLocaleString()} records`;
+        }
+
+        if (filteredInfo) {
+            const filterBtn = document.getElementById('dateFilterBtn');
+            if (filterBtn && filterBtn.classList.contains('active')) {
+                filteredInfo.textContent = `${filteredData.length.toLocaleString()} filtered records`;
+            } else {
+                filteredInfo.textContent = 'Apply filter first';
+            }
+        }
+    }
+
+    function setupDateFilter() {
+        console.log('Setting up date filter. Date column:', dateColumn);
+
+        if (!dateColumn) {
+            document.getElementById('filterStatus').innerHTML = 'No date column detected';
+            return;
+        }
+
+        if (tableData.date_info && tableData.date_info.min_date && tableData.date_info.max_date) {
+            const startInput = document.getElementById('startDateFilter');
+            const endInput = document.getElementById('endDateFilter');
+
+            startInput.min = tableData.date_info.min_date;
+            startInput.max = tableData.date_info.max_date;
+            endInput.min = tableData.date_info.min_date;
+            endInput.max = tableData.date_info.max_date;
+
+            console.log('Date range set:', tableData.date_info.min_date, 'to', tableData.date_info.max_date);
+
+            document.getElementById('filterStatus').innerHTML =
+                `Date range: ${tableData.date_info.min_date} to ${tableData.date_info.max_date}`;
+        }
+    }
+
+    function initializeTable() {
+        if (!tableData || !tableData.rows || tableData.rows.length === 0) {
+            document.getElementById('tableBody').innerHTML =
+                '<tr><td colspan="100%" style="text-align: center; padding: 2rem; color: var(--gray-500);">No data available</td></tr>';
+            return;
+        }
+
+        filteredData = [...tableData.rows];
+
+        setupDateFilter();
+        setupColumnControls();
+        renderTable();
+        renderPagination();
+        updateDownloadInfo();
+
+        document.getElementById('rowsPerPage').addEventListener('change', function () {
+            tableData.rowsPerPage = parseInt(this.value);
+            tableData.currentPage = 1;
+            renderTable();
+            renderPagination();
+        });
+    }
+
+    function setupColumnControls() {
+        const container = document.getElementById('columnCheckboxes');
+        container.innerHTML = '';
+
+        tableData.columns.forEach((col, index) => {
+            const div = document.createElement('div');
+            div.innerHTML = `
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: background 0.2s ease;">
+                <input type="checkbox" id="col_${index}" 
+                       ${tableData.visibleColumns.includes(col) ? 'checked' : ''} 
+                       onchange="toggleColumn('${col.replace(/'/g, "\\'")}')"
+                       style="margin: 0;">
+                <span style="font-size: 0.875rem; color: var(--gray-700);" title="${col}">
+                    ${col.length > 25 ? col.substring(0, 25) + '...' : col}
+                </span>
+            </label>
+        `;
+            container.appendChild(div);
+        });
+    }
+
+    function renderTable() {
+        const dataToRender = filteredData || tableData.rows;
+        const startIndex = (tableData.currentPage - 1) * tableData.rowsPerPage;
+        const endIndex = Math.min(startIndex + tableData.rowsPerPage, dataToRender.length);
+        const pageRows = dataToRender.slice(startIndex, endIndex);
+
+        const headersContainer = document.getElementById('tableHeaders');
+        headersContainer.innerHTML = '';
+
+        tableData.visibleColumns.forEach(col => {
+        const th = document.createElement('th');
+        th.className = 'th-wrapper';
+
+        const hasFilter = priorityFilterColumns[currentTable]?.includes(col);
+
+        if (hasFilter) {
+            th.innerHTML = `
+                <div class="column-header-wrapper">
+                    <span class="column-title" title="${col}">${col}</span>
+                    <i class="fas fa-filter filter-icon" 
+                       data-column="${col}" 
+                       onclick="toggleColumnFilter('${col.replace(/'/g, "\\'")}')"
+                       id="filter-icon-${col.replace(/[^a-zA-Z0-9]/g, '_')}">
+                    </i>
+                </div>
+            `;
+        } else {
+            th.innerHTML = `<span class="column-title" title="${col}">${col}</span>`;
+        }
+        
+        headersContainer.appendChild(th);
+    });
+
+        const bodyContainer = document.getElementById('tableBody');
+        bodyContainer.innerHTML = '';
+
+        if (pageRows.length === 0) {
+            const message = dataToRender.length === 0 ? 'No data matches the current filter' : 'No data for this page';
+            bodyContainer.innerHTML = `<tr><td colspan="${tableData.visibleColumns.length}" style="text-align: center; padding: 2rem; color: var(--gray-500);">${message}</td></tr>`;
+            return;
+        }
+
+        pageRows.forEach(row => {
+            const tr = document.createElement('tr');
+
+            tableData.visibleColumns.forEach(col => {
+                const td = document.createElement('td');
+                let value = row[col] !== undefined && row[col] !== null ? row[col].toString() : '';
+
+                // Format dates for display
+                if (isDateColumn(col) && value) {
+                    value = formatDateForDisplay(value);
+                }
+
+                td.textContent = value.length > 30 ? value.substring(0, 30) + '...' : value;
+                td.title = value;
+
+                tr.appendChild(td);
+            });
+
+            bodyContainer.appendChild(tr);
+        });
+    }
+
+
+    
+
+    // Replace the toggleColumnFilter function with this enhanced version:
+function toggleColumnFilter(columnName) {
+    console.log('Filter clicked for column:', columnName);
+    
+    const filterIcon = document.getElementById(`filter-icon-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    const existingDropdown = document.getElementById(`filter-dropdown-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    
+    // Close all other dropdowns first
+    document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+        if (dropdown.id !== `filter-dropdown-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`) {
+            dropdown.classList.remove('active');
+        }
+    });
+    
+    if (existingDropdown) {
+        // Toggle existing dropdown
+        existingDropdown.classList.toggle('active');
+    } else {
+        // Create new dropdown
+        createFilterDropdown(columnName);
+    }
+}
+
+// Add this new function to create the dropdown:
+function createFilterDropdown(columnName) {
+    const th = document.querySelector(`th:has([data-column="${columnName}"])`);
+    if (!th) return;
+    
+    const dropdownId = `filter-dropdown-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    
+    const dropdown = document.createElement('div');
+    dropdown.id = dropdownId;
+    dropdown.className = 'filter-dropdown active';
+    
+    // Determine filter type based on column
+    const filterType = getFilterType(columnName);
+    
+    dropdown.innerHTML = `
+        <div class="filter-header">
+            <span class="filter-title">Filter: ${columnName}</span>
+            <button class="filter-close" onclick="closeFilterDropdown('${columnName.replace(/'/g, "\\'")}')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="filter-content" id="filter-content-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}">
+            <div class="filter-loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
+        </div>
+        <div class="filter-footer">
+            <button class="btn-filter-action btn-apply" onclick="applyColumnFilter('${columnName.replace(/'/g, "\\'")}')">
+                Apply
+            </button>
+            <button class="btn-filter-action btn-clear" onclick="clearColumnFilter('${columnName.replace(/'/g, "\\'")}')">
+                Clear
+            </button>
+        </div>
+    `;
+    
+    th.appendChild(dropdown);
+    
+    // Load filter content based on type
+    loadFilterContent(columnName, filterType);
+    
+    // Close dropdown when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', function closeDropdown(e) {
+            if (!th.contains(e.target)) {
+                dropdown.classList.remove('active');
+                document.removeEventListener('click', closeDropdown);
+            }
+        });
+    }, 100);
+}
+
+// Add function to determine filter type:
+function getFilterType(columnName) {
+    const textSearchColumns = ['Candidate Name', 'candidate_name', 'Client Manager', 
+                              'manager', 'Recruiters Name', 'recruiters_name', 
+                              'Employee ID', 'emp_id'];
+    const dateColumns = ['Date', 'date', 'Tentative Start Date'];
+    const numberColumns = ['Margin', 'margin'];
+    
+    if (textSearchColumns.includes(columnName)) return 'text';
+    if (dateColumns.includes(columnName)) return 'date';
+    if (numberColumns.includes(columnName)) return 'number';
+    return 'checkbox'; // default for most columns
+}
+
+// Add these helper functions:
+function closeFilterDropdown(columnName) {
+    const dropdown = document.getElementById(`filter-dropdown-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    if (dropdown) dropdown.classList.remove('active');
+}
+
+function applyColumnFilter(columnName) {
+    console.log('Applying filter for:', columnName);
+    
+    const filterType = getFilterType(columnName);
+    let filterValue = null;
+    
+    // Get filter value based on type
+    switch(filterType) {
+        case 'text':
+            const textInput = document.getElementById(`text-filter-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+            filterValue = textInput.value.trim();
+            if (!filterValue) {
+                alert('Please enter a search term');
+                return;
+            }
+            break;
+            
+        case 'date':
+            const dateFrom = document.getElementById(`date-from-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`).value;
+            const dateTo = document.getElementById(`date-to-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`).value;
+            if (!dateFrom && !dateTo) {
+                alert('Please select at least one date');
+                return;
+            }
+            filterValue = { from: dateFrom, to: dateTo };
+            break;
+            
+        case 'number':
+            const numMin = document.getElementById(`number-min-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`).value;
+            const numMax = document.getElementById(`number-max-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`).value;
+            if (!numMin && !numMax) {
+                alert('Please enter at least one value');
+                return;
+            }
+            filterValue = { min: numMin, max: numMax };
+            break;
+            
+        case 'checkbox':
+            const valuesList = document.getElementById(`values-list-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+            const checkedBoxes = valuesList.querySelectorAll('.filter-checkbox:checked');
+            const totalBoxes = valuesList.querySelectorAll('.filter-checkbox');
+            
+            // If all are selected or none selected, remove the filter entirely
+            if (checkedBoxes.length === totalBoxes.length || checkedBoxes.length === 0) {
+                // Remove this filter if it exists
+                delete activeColumnFilters[currentTable][columnName];
+                
+                // Update filter icon
+                const filterIcon = document.getElementById(`filter-icon-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+                if (filterIcon) {
+                    filterIcon.classList.remove('active');
+                }
+                
+                // Close dropdown
+                closeFilterDropdown(columnName);
+                
+                // Apply remaining filters
+                applyAllColumnFilters();
+                return; // Exit early
+            } else {
+                // Get selected values
+                filterValue = Array.from(checkedBoxes).map(cb => cb.value);
+            }
+            break;
+    }
+    
+    // Store the filter (only reached if we have a valid filter)
+    activeColumnFilters[currentTable][columnName] = {
+        type: filterType,
+        value: filterValue
+    };
+    
+    // Update filter icon to show active
+    const filterIcon = document.getElementById(`filter-icon-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    if (filterIcon) {
+        filterIcon.classList.add('active');
+    }
+    
+    // Close dropdown
+    closeFilterDropdown(columnName);
+    
+    // Apply all filters
+    applyAllColumnFilters();
+}
+
+// Add function to clear a single column filter:
+
+// Update the clearColumnFilter function to show changes immediately:
+function clearColumnFilter(columnName) {
+    console.log('Clearing filter for:', columnName);
+    
+    // Remove from active filters
+    delete activeColumnFilters[currentTable][columnName];
+    
+    // Update filter icon
+    const filterIcon = document.getElementById(`filter-icon-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    if (filterIcon) {
+        filterIcon.classList.remove('active');
+        filterIcon.title = ''; // Remove tooltip
+    }
+    
+    // Close dropdown
+    closeFilterDropdown(columnName);
+    
+    // Re-apply remaining filters (or show all data if no filters left)
+    applyAllColumnFilters();
+}
+
+// Add function to apply all column filters:
+// Update the applyAllColumnFilters function:
+function applyAllColumnFilters() {
+    const filters = activeColumnFilters[currentTable];
+    const hasFilters = Object.keys(filters).length > 0;
+
+     console.log('🔍 SENDING FILTERS:', {
+        table: currentTable,
+        filters: filters,
+        filterCount: Object.keys(filters).length
+    });
+    
+    if (!hasFilters) {
+        // No filters, show original sample data
+        filteredData = [...tableData.rows];
+        tableData.currentPage = 1;
+        renderTable();
+        renderPagination();
+        updateFilterStatus();
+        return;
+    }
+    
+    // Show loading
+    const tableBody = document.getElementById('tableBody');
+    tableBody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Applying filters...</td></tr>';
+    
+    // Send filter request to backend
+    fetch('/filter_data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            table: currentTable,
+            column_filters: filters
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            console.log(`✅ Received ${result.total_filtered} filtered records`);
+            
+            // Update the filtered data
+            filteredData = result.data;
+            
+            // If no results found
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="100%" style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                            <i class="fas fa-search"></i><br>
+                            No records match the current filters<br>
+                            <small>Try adjusting your filter criteria</small>
+                        </td>
+                    </tr>`;
+                renderPagination(); // This will show "0 entries"
+                return;
+            }
+            
+            // Reset to first page and render
+            tableData.currentPage = 1;
+            renderTable();
+            renderPagination();
+            updateFilterStatus();
+            
+            // Update any filter badges or indicators
+            updateActiveFilterIndicators();
+            
+        } else {
+            console.error('❌ Filter error:', result.error);
+            alert('Error applying filters: ' + result.error);
+            
+            // Show error in table
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="100%" style="text-align: center; padding: 2rem; color: var(--red-600);">
+                        <i class="fas fa-exclamation-circle"></i><br>
+                        Error applying filters<br>
+                        <small>${result.error}</small>
+                    </td>
+                </tr>`;
+        }
+    })
+    .catch(error => {
+        console.error('❌ Filter request failed:', error);
+        alert('Error applying filters. Please try again.');
+        
+        // Restore original data on error
+        filteredData = [...tableData.rows];
+        renderTable();
+        renderPagination();
+    });
+}
+
+// Add function to update visual indicators
+function updateActiveFilterIndicators() {
+    
+    const filters = activeColumnFilters[currentTable];
+    
+    // Update the main date filter button if using column filters
+    const dateFilterBtn = document.getElementById('dateFilterBtn');
+    const filterBtnText = document.getElementById('filterBtnText');
+    
+    const activeCount = Object.keys(filters).length;
+    
+    if (activeCount > 0) {
+        // Show count of active column filters
+        filterBtnText.textContent = `Filters (${activeCount})`;
+        
+        // Log active filters for debugging
+        console.log('Active filters:', filters);
+        
+        // Update each column's filter icon
+        Object.keys(filters).forEach(columnName => {
+            const icon = document.getElementById(`filter-icon-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+            if (icon) {
+                icon.classList.add('active');
+                
+                // Add tooltip showing filter details
+                const filter = filters[columnName];
+                if (filter.type === 'checkbox' && filter.value.length > 0) {
+                    icon.title = `Filtering: ${filter.value.length} values selected`;
+                } else if (filter.type === 'text') {
+                    icon.title = `Searching for: "${filter.value}"`;
+                } else if (filter.type === 'date') {
+                    icon.title = `Date range: ${filter.value.from || 'start'} to ${filter.value.to || 'end'}`;
+                } else if (filter.type === 'number') {
+                    icon.title = `Range: ${filter.value.min || 'min'} to ${filter.value.max || 'max'}`;
+                }
+            }
+        });
+    } else {
+        filterBtnText.textContent = 'Filter';
+    }
+    const clearBtn = document.getElementById('clearAllFiltersBtn');
+    if (clearBtn) {
+        clearBtn.style.display = activeCount > 0 ? 'inline-flex' : 'none';
+    }
+}
+
+
+// Add function to update filter status:
+function updateFilterStatus() {
+    const activeCount = Object.keys(activeColumnFilters[currentTable]).length;
+    
+    // Update badge on each active filter icon
+    document.querySelectorAll('.filter-icon.active').forEach(icon => {
+        const columnName = icon.getAttribute('data-column');
+        const filter = activeColumnFilters[currentTable][columnName];
+        if (filter && filter.value) {
+            // Could add a badge here showing number of selected items
+        }
+    });
+    
+    console.log(`Active filters: ${activeCount}`);
+}
+
+// Replace the loadFilterContent function with this implementation:
+function loadFilterContent(columnName, filterType) {
+    console.log(`Loading ${filterType} filter for ${columnName}`);
+    const contentDiv = document.getElementById(`filter-content-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    
+    switch(filterType) {
+        case 'text':
+            loadTextFilter(columnName, contentDiv);
+            break;
+        case 'date':
+            loadDateFilter(columnName, contentDiv);
+            break;
+        case 'number':
+            loadNumberFilter(columnName, contentDiv);
+            break;
+        case 'checkbox':
+            loadCheckboxFilter(columnName, contentDiv);
+            break;
+    }
+}
+
+// Add these individual filter type loaders:
+function loadTextFilter(columnName, contentDiv) {
+    contentDiv.innerHTML = `
+        <div class="text-filter-container">
+            <input type="text" 
+                   class="filter-text-input" 
+                   id="text-filter-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}"
+                   placeholder="Search ${columnName}..."
+                   onkeypress="if(event.key === 'Enter') applyColumnFilter('${columnName.replace(/'/g, "\\'")}')"
+            />
+            <div class="filter-help-text">
+                Press Enter to search or click Apply
+            </div>
+        </div>
+    `;
+    
+    // Focus on input
+    setTimeout(() => {
+        document.getElementById(`text-filter-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`).focus();
+    }, 100);
+}
+
+function loadDateFilter(columnName, contentDiv) {
+    contentDiv.innerHTML = `
+        <div class="date-filter-container">
+            <div class="date-input-group">
+                <label class="date-label">From:</label>
+                <input type="date" 
+                       class="filter-date-input" 
+                       id="date-from-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}"
+                />
+            </div>
+            <div class="date-input-group">
+                <label class="date-label">To:</label>
+                <input type="date" 
+                       class="filter-date-input" 
+                       id="date-to-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}"
+                />
+            </div>
+        </div>
+    `;
+}
+
+function loadNumberFilter(columnName, contentDiv) {
+    contentDiv.innerHTML = `
+        <div class="number-filter-container">
+            <div class="number-input-group">
+                <label class="number-label">Min:</label>
+                <input type="number" 
+                       class="filter-number-input" 
+                       id="number-min-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}"
+                       placeholder="Minimum"
+                />
+            </div>
+            <div class="number-input-group">
+                <label class="number-label">Max:</label>
+                <input type="number" 
+                       class="filter-number-input" 
+                       id="number-max-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}"
+                       placeholder="Maximum"
+                />
+            </div>
+        </div>
+    `;
+}
+
+
+// Replace the fetchUniqueValues function with this real implementation:
+function fetchUniqueValues(columnName, contentDiv) {
+    fetch('/get_column_unique_values', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            table: currentTable,
+            column: columnName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Cache the values
+            columnUniqueValues[currentTable][columnName] = data.values;
+            
+            // Display them
+            displayCheckboxValues(columnName, contentDiv, data.values);
+        } else {
+            contentDiv.innerHTML = `
+                <div class="filter-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Error loading values: ${data.error}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching unique values:', error);
+        contentDiv.innerHTML = `
+            <div class="filter-error">
+                <i class="fas fa-exclamation-circle"></i>
+                Error loading filter values
+            </div>
+        `;
+    });
+}
+
+function loadCheckboxFilter(columnName, contentDiv) {
+    // Check if we already have cached values
+    const cacheKey = `${currentTable}_${columnName}`;
+    if (columnUniqueValues[currentTable][columnName]) {
+        displayCheckboxValues(columnName, contentDiv, columnUniqueValues[currentTable][columnName]);
+    } else {
+        // Fetch unique values from backend
+        fetchUniqueValues(columnName, contentDiv);
+    }
+}
+
+function displayCheckboxValues(columnName, contentDiv, values) {
+    const currentFilter = activeColumnFilters[currentTable][columnName] || [];
+    
+    let html = `
+        <div class="checkbox-filter-container">
+            <div class="filter-search-box">
+                <input type="text" 
+                       class="filter-search-input" 
+                       placeholder="Search values..."
+                       onkeyup="filterCheckboxList('${columnName.replace(/'/g, "\\'")}')"
+                       id="search-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}"
+                />
+            </div>
+            <div class="filter-select-all">
+                <label>
+                    <input type="checkbox" 
+                           id="select-all-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}"
+                           onchange="toggleSelectAll('${columnName.replace(/'/g, "\\'")}')"
+                           ${currentFilter.length === 0 ? 'checked' : ''}
+                    />
+                    Select All
+                </label>
+            </div>
+            <div class="filter-values-list" id="values-list-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}">
+    `;
+    
+    values.forEach((value, index) => {
+        const displayValue = value || '(empty)';
+        const isChecked = currentFilter.length === 0 || currentFilter.includes(value);
+        html += `
+            <label class="filter-value-item" data-value="${value}">
+                <input type="checkbox" 
+                       class="filter-checkbox"
+                       value="${value}"
+                       ${isChecked ? 'checked' : ''}
+                       onchange="updateSelectAllState('${columnName.replace(/'/g, "\\'")}')"
+                />
+                <span class="filter-value-text">${displayValue}</span>
+            </label>
+        `;
+    });
+    
+    html += `
+            </div>
+            <div class="filter-stats">
+                ${values.length} unique values
+            </div>
+        </div>
+    `;
+    
+    contentDiv.innerHTML = html;
+}
+
+
+
+
+// Add these helper functions for checkbox filter functionality:
+function filterCheckboxList(columnName) {
+    const searchInput = document.getElementById(`search-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    const searchTerm = searchInput.value.toLowerCase();
+    const valuesList = document.getElementById(`values-list-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    const items = valuesList.querySelectorAll('.filter-value-item');
+    
+    items.forEach(item => {
+        const text = item.querySelector('.filter-value-text').textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function toggleSelectAll(columnName) {
+    const selectAllCheckbox = document.getElementById(`select-all-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    const valuesList = document.getElementById(`values-list-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    const checkboxes = valuesList.querySelectorAll('.filter-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+}
+
+function updateSelectAllState(columnName) {
+    const selectAllCheckbox = document.getElementById(`select-all-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    const valuesList = document.getElementById(`values-list-${columnName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    const checkboxes = valuesList.querySelectorAll('.filter-checkbox');
+    const checkedBoxes = valuesList.querySelectorAll('.filter-checkbox:checked');
+    
+    if (checkedBoxes.length === checkboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedBoxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+}
+
+    function renderPagination() {
+        const dataToRender = filteredData || tableData.rows;
+        const totalPages = Math.ceil(dataToRender.length / tableData.rowsPerPage);
+        const startRecord = dataToRender.length > 0 ? (tableData.currentPage - 1) * tableData.rowsPerPage + 1 : 0;
+        const endRecord = Math.min(tableData.currentPage * tableData.rowsPerPage, dataToRender.length);
+
+        const infoText = dataToRender.length > 0 ?
+            `Showing ${startRecord}-${endRecord} of ${dataToRender.length} entries` :
+            'No entries match the filter';
+
+        document.getElementById('paginationInfo').textContent = infoText;
+
+        const container = document.getElementById('paginationControls');
+        container.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        const paginationStyle = `
+        padding: 0.5rem 0.75rem;
+        margin: 0 0.125rem;
+        border: 1px solid var(--gray-300);
+        background: var(--white);
+        color: var(--gray-700);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+    `;
+
+        const activeStyle = `
+        background: var(--primary-500);
+        border-color: var(--primary-500);
+        color: var(--white);
+    `;
+
+        const disabledStyle = `
+        opacity: 0.5;
+        cursor: not-allowed;
+    `;
+
+        // Previous button
+        const prevLi = document.createElement('li');
+        const prevDisabled = tableData.currentPage === 1;
+        prevLi.innerHTML = `<a href="#" style="${paginationStyle}${prevDisabled ? disabledStyle : ''}" onclick="${prevDisabled ? 'return false' : `changePage(${tableData.currentPage - 1})`}">Previous</a>`;
+        container.appendChild(prevLi);
+
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= tableData.currentPage - 2 && i <= tableData.currentPage + 2)) {
+                const pageLi = document.createElement('li');
+                const isActive = i === tableData.currentPage;
+                pageLi.innerHTML = `<a href="#" style="${paginationStyle}${isActive ? activeStyle : ''}" onclick="changePage(${i})">${i}</a>`;
+                container.appendChild(pageLi);
+            } else if (i === tableData.currentPage - 3 || i === tableData.currentPage + 3) {
+                const ellipsisLi = document.createElement('li');
+                ellipsisLi.innerHTML = `<span style="${paginationStyle}${disabledStyle}">...</span>`;
+                container.appendChild(ellipsisLi);
+            }
+        }
+
+        // Next button
+        const nextLi = document.createElement('li');
+        const nextDisabled = tableData.currentPage === totalPages;
+        nextLi.innerHTML = `<a href="#" style="${paginationStyle}${nextDisabled ? disabledStyle : ''}" onclick="${nextDisabled ? 'return false' : `changePage(${tableData.currentPage + 1})`}">Next</a>`;
+        container.appendChild(nextLi);
+    }
+
+    function changePage(page) {
+        const dataToRender = filteredData || tableData.rows;
+        const totalPages = Math.ceil(dataToRender.length / tableData.rowsPerPage);
+
+        if (page < 1 || page > totalPages) return;
+
+        tableData.currentPage = page;
+        renderTable();
+        renderPagination();
+
+        document.getElementById('dataTable').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function downloadCompleteData() {
+        const downloadFile = tableConfigs[currentTable].downloadFile;
+        window.location.href = `/download/${downloadFile}`;
+    }
+
+    function downloadFilteredData() {
+    // Check if we have any filters applied (date or column filters)
+    const hasDateFilter = document.getElementById('dateFilterBtn').classList.contains('active');
+    const hasColumnFilters = Object.keys(activeColumnFilters[currentTable]).length > 0;
+    
+    if (!filteredData || filteredData.length === 0) {
+        alert('No filtered data to download. Please apply a filter first.');
+        return;
+    }
+
+    if (!hasDateFilter && !hasColumnFilters) {
+        alert('No filter applied. Use "Complete Dataset" for all data or apply filters first.');
+        return;
+    }
+
+    // Define the column mapping (database column -> export column name)
+    const columnMapping = {
+        'date': 'Date',
+        'client': 'Client',
+        'emp_id': 'Employee ID',
+        'status': 'Status',
+        'track': 'Track',
+        'employee_name': 'Ceipal_Name',
+        'email_id': 'Email ID',
+        'role': 'Role',
+        'reporting_to': 'Reporting To',
+        'team_name': 'Team Name',
+        'assigned_jobs': 'Jobs',
+        'submission': 'Submissions',
+        'internal_rejections': 'Internal Rejections',
+        'client_submissions': 'Client Submissions',
+        'interviewer_schedules': 'Interview Schedules',
+        'sent_count': 'Bulk Mail Sent Count',
+        'open_count': 'Bulk Mail Open Count',
+        'search_string_count': 'Search String Count',
+        'career_builder': 'Career Builder',
+        'monster': 'Monster',
+        'dice': 'Dice',
+        'internal_db': 'Internal DB',
+        'total_views': 'Total Views',
+        'total_inbound_calls': 'Total Inbound No Of Calls',
+        'total_inbound_duration': 'Total Inbound Call Duration',
+        'inbound_calls_gt_1min': '>1 Minute Inbound Call',
+        'total_outbound_calls_connected': 'Total No Of OutboundCalls- Connected',
+        'total_outbound_duration': 'Total Outbound Call Duration',
+        'total_outbound_calls_not_connected': 'Total No Of OutboundCalls-Not Connected',
+        'outbound_calls_gt_1min': 'Calls >1 Minute Outbound Call',
+        'outbound_duration_gt_1min': '>1 Minute Call Outbound Total Time',
+        'closure': 'Closure',
+        'week': 'Week',
+        'attendance_type1': 'Attendance',
+        'starts': 'starts'
+    };
+
+    // Define the exact column order with display names
+    const exportColumnOrder = [
+        'Date',
+        'Client',
+        'Employee ID',
+        'Status',
+        'Track',
+        'Ceipal_Name',
+        'Email ID',
+        'Role',
+        'Reporting To',
+        'Team Name',
+        'Jobs',
+        'Submissions',
+        'Internal Rejections',
+        'Pending Feedback', // Missing - will be 0
+        'Client Submissions',
+        'Interview Schedules',
+        'Bulk Mail Sent Count',
+        'Bulk Mail Open Count',
+        'Search String Count',
+        'Career Builder',
+        'Monster',
+        'Dice',
+        'Internal DB',
+        'Total Views',
+        'G Suite_Total Emails', // Missing - will be 0
+        'G Suite_Emails Sent', // Missing - will be 0
+        'G Suite_Emails Received', // Missing - will be 0
+        'Total Inbound No Of Calls',
+        'Total Inbound Call Duration',
+        '>1 Minute Inbound Call',
+        'Total No Of OutboundCalls- Connected',
+        'Total Outbound Call Duration',
+        'Total No Of OutboundCalls-Not Connected',
+        'Calls >1 Minute Outbound Call',
+        '>1 Minute Call Outbound Total Time',
+        'Avg HT', // Missing - will be 0
+        'Closure',
+        'Week',
+        'Attendance',
+        'starts'
+    ];
+
+    // Only apply column reordering for master table
+    if (currentTable === 'master') {
+        // Create CSV content with the exact column order
+        let csvContent = exportColumnOrder.join(',') + '\n';
+
+        // Add data rows
+        filteredData.forEach(row => {
+            const values = exportColumnOrder.map(exportColName => {
+                // Find the database column name for this export column
+                let dbColumnName = null;
+                for (const [dbCol, exportCol] of Object.entries(columnMapping)) {
+                    if (exportCol === exportColName) {
+                        dbColumnName = dbCol;
+                        break;
+                    }
+                }
+
+                // Get the value
+                let value = '';
+                if (dbColumnName && row[dbColumnName] !== undefined) {
+                    value = row[dbColumnName];
+                } else if (['Pending Feedback', 'G Suite_Total Emails', 'G Suite_Emails Sent', 
+                           'G Suite_Emails Received', 'Avg HT'].includes(exportColName)) {
+                    // Missing columns get 0
+                    value = '0';
+                }
+
+                // Properly escape CSV values
+                value = value || '';
+                if (value.toString().includes(',') || value.toString().includes('"') || value.toString().includes('\n')) {
+                    return `"${value.toString().replace(/"/g, '""')}"`;
+                }
+                return value;
+            });
+            csvContent += values.join(',') + '\n';
+        });
+
+        // Create and download the file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+
+            // Generate filename
+            let filename = `filtered_master_table`;
+
+            // Add date range to filename if date filter is applied
+            if (hasDateFilter) {
+                const startDate = document.getElementById('startDateFilter').value;
+                const endDate = document.getElementById('endDateFilter').value;
+                if (startDate || endDate) {
+                    filename += '_' + (startDate || 'start') + '_to_' + (endDate || 'end');
+                }
+            }
+            
+            // Add filter count to filename
+            if (hasColumnFilters) {
+                const filterCount = Object.keys(activeColumnFilters[currentTable]).length;
+                filename += `_${filterCount}filters`;
+            }
+            
+            filename += '.csv';
+
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show success message
+            console.log(`✅ Downloaded ${filteredData.length} filtered records with reordered columns and missing columns filled with 0`);
+        }
+    } else {
+        // For closure table, use original logic
+        let headers = tableData.columns;
+        let csvContent = headers.join(',') + '\n';
+
+        filteredData.forEach(row => {
+            const values = headers.map(header => {
+                const value = row[header] || '';
+                if (value.toString().includes(',') || value.toString().includes('"') || value.toString().includes('\n')) {
+                    return `"${value.toString().replace(/"/g, '""')}"`;
+                }
+                return value;
+            });
+            csvContent += values.join(',') + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+
+            const tableName = tableConfigs[currentTable].displayName.toLowerCase().replace(' ', '_');
+            let filename = `filtered_${tableName}`;
+
+            if (hasDateFilter) {
+                const startDate = document.getElementById('startDateFilter').value;
+                const endDate = document.getElementById('endDateFilter').value;
+                if (startDate || endDate) {
+                    filename += '_' + (startDate || 'start') + '_to_' + (endDate || 'end');
+                }
+            }
+            
+            if (hasColumnFilters) {
+                const filterCount = Object.keys(activeColumnFilters[currentTable]).length;
+                filename += `_${filterCount}filters`;
+            }
+            
+            filename += '.csv';
+
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+}
+
+    function toggleColumns() {
+        const controls = document.getElementById('columnControls');
+        const button = document.querySelector('#columnsText');
+
+        if (controls.style.display === 'none') {
+            controls.style.display = 'block';
+            button.textContent = 'Hide';
+        } else {
+            controls.style.display = 'none';
+            button.textContent = 'Columns';
+        }
+    }
+
+    function toggleColumn(columnName) {
+        const index = tableData.visibleColumns.indexOf(columnName);
+
+        if (index > -1) {
+            tableData.visibleColumns.splice(index, 1);
+        } else {
+            const originalIndex = tableData.columns.indexOf(columnName);
+            let insertIndex = 0;
+            for (let i = 0; i < originalIndex; i++) {
+                if (tableData.visibleColumns.includes(tableData.columns[i])) {
+                    insertIndex++;
+                }
+            }
+            tableData.visibleColumns.splice(insertIndex, 0, columnName);
+        }
+
+        renderTable();
+    }
+
+    function showAllColumns() {
+        tableData.visibleColumns = [...tableData.columns];
+        setupColumnControls();
+        renderTable();
+    }
+
+    function hideAllColumns() {
+        tableData.visibleColumns = [tableData.columns[0]];
+        setupColumnControls();
+        renderTable();
+    }
+</script>
+{% endblock %}

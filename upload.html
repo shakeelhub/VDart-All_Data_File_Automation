@@ -1,0 +1,618 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Main Data Files{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>Upload Main Data Files</h1>
+        <p>Upload all 6 required files to begin main data processing</p>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="upload-form">
+        <form method="POST" action="/upload_files" enctype="multipart/form-data" id="uploadForm">
+            <div class="upload-grid">
+                <!-- Activity Report -->
+                <div class="upload-card">
+                    <div class="card-header">
+                        <div class="card-icon activity">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Activity Report</h3>
+                            <p>Employee activity tracking</p>
+                        </div>
+                    </div>
+                    <div class="upload-zone" data-file-type="activity_report">
+                        <input type="file" name="activity_report" class="file-input" accept=".xlsx,.xls" required>
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drop file here or click to upload</p>
+                            <span>Excel format (.xlsx, .xls)</span>
+                        </div>
+                        <div class="upload-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="file-name"></span>
+                            <button type="button" class="remove-file" onclick="removeFile(this)">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zoom Call Data -->
+                <div class="upload-card">
+                    <div class="card-header">
+                        <div class="card-icon zoom">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Zoom Call Data</h3>
+                            <p>Video conference logs</p>
+                        </div>
+                    </div>
+                    <div class="upload-zone" data-file-type="zoom_call">
+                        <input type="file" name="zoom_call" class="file-input" accept=".csv" required>
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drop file here or click to upload</p>
+                            <span>CSV format (.csv)</span>
+                        </div>
+                        <div class="upload-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="file-name"></span>
+                            <button type="button" class="remove-file" onclick="removeFile(this)">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search String -->
+                <div class="upload-card">
+                    <div class="card-header">
+                        <div class="card-icon search">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Search String</h3>
+                            <p>Search query data</p>
+                        </div>
+                    </div>
+                    <div class="upload-zone" data-file-type="search_string">
+                        <input type="file" name="search_string" class="file-input" accept=".xlsx,.xls" required>
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drop file here or click to upload</p>
+                            <span>Excel format (.xlsx, .xls)</span>
+                        </div>
+                        <div class="upload-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="file-name"></span>
+                            <button type="button" class="remove-file" onclick="removeFile(this)">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Usage Report -->
+                <div class="upload-card">
+                    <div class="card-header">
+                        <div class="card-icon usage">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Usage Report</h3>
+                            <p>System usage analytics</p>
+                        </div>
+                    </div>
+                    <div class="upload-zone" data-file-type="usage_report">
+                        <input type="file" name="usage_report" class="file-input" accept=".xlsx,.xls" required>
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drop file here or click to upload</p>
+                            <span>Excel format (.xlsx, .xls)</span>
+                        </div>
+                        <div class="upload-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="file-name"></span>
+                            <button type="button" class="remove-file" onclick="removeFile(this)">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Statistics -->
+                <div class="upload-card">
+                    <div class="card-header">
+                        <div class="card-icon email">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Email Statistics</h3>
+                            <p>Email communication metrics</p>
+                        </div>
+                    </div>
+                    <div class="upload-zone" data-file-type="email_stats">
+                        <input type="file" name="email_stats" class="file-input" accept=".xlsx,.xls" required>
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drop file here or click to upload</p>
+                            <span>Excel format (.xlsx, .xls)</span>
+                        </div>
+                        <div class="upload-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="file-name"></span>
+                            <button type="button" class="remove-file" onclick="removeFile(this)">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance -->
+                <div class="upload-card">
+                    <div class="card-header">
+                        <div class="card-icon attendance">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Attendance</h3>
+                            <p>Employee attendance records</p>
+                        </div>
+                    </div>
+                    <div class="upload-zone" data-file-type="attendance">
+                        <input type="file" name="attendance" class="file-input" accept=".xlsx,.xls" required>
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drop file here or click to upload</p>
+                            <span>Excel format (.xlsx, .xls)</span>
+                        </div>
+                        <div class="upload-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="file-name"></span>
+                            <button type="button" class="remove-file" onclick="removeFile(this)">×</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-section" id="uploadProgress" style="display: none;">
+                <div class="progress-header">
+                    <h3>Processing Files</h3>
+                    <p>Please wait while we process your data...</p>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+
+            <!-- Submit Section -->
+            <div class="submit-section">
+                <div class="file-counter">
+                    <span id="fileCount">0</span> / 6 files uploaded
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                    <i class="fas fa-play"></i>
+                    <span>Process Main Data</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.upload-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
+
+.page-header p {
+    font-size: 1.125rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.upload-form {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.upload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.upload-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.upload-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.upload-card.has-file {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.card-icon.activity { background: #3b82f6; }
+.card-icon.zoom { background: #8b5cf6; }
+.card-icon.search { background: #06b6d4; }
+.card-icon.usage { background: #10b981; }
+.card-icon.email { background: #f59e0b; }
+.card-icon.attendance { background: #ef4444; }
+
+.card-info h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.card-info p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.upload-zone {
+    position: relative;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.upload-zone:hover {
+    border-color: #3b82f6;
+    background: #f8fafc;
+}
+
+.upload-zone.dragover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.upload-zone.has-file {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.file-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upload-content i {
+    font-size: 2rem;
+    color: #94a3b8;
+}
+
+.upload-content p {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #475569;
+}
+
+.upload-content span {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.upload-success {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.upload-success.visible {
+    display: flex;
+}
+
+.upload-success i {
+    font-size: 2rem;
+    color: #10b981;
+}
+
+.file-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1e293b;
+    word-break: break-all;
+    max-width: 100%;
+}
+
+.remove-file {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.remove-file:hover {
+    background: #dc2626;
+}
+
+.progress-section {
+    margin-bottom: 2rem;
+}
+
+.progress-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.progress-header h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.progress-header p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.submit-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.file-counter {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.submit-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 768px) {
+    .upload-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .submit-section {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFileUploads();
+    initializeFormSubmission();
+    updateUploadSummary();
+});
+
+function initializeFileUploads() {
+    document.querySelectorAll('.file-input').forEach(input => {
+        const uploadCard = input.closest('.upload-card');
+        const uploadZone = input.closest('.upload-zone');
+        const uploadContent = uploadZone.querySelector('.upload-content');
+        const uploadSuccess = uploadZone.querySelector('.upload-success');
+        const fileName = uploadSuccess.querySelector('.file-name');
+
+        input.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                fileName.textContent = file.name;
+                uploadContent.style.display = 'none';
+                uploadSuccess.style.display = 'flex';
+                uploadSuccess.classList.add('visible');
+                uploadZone.classList.add('has-file');
+                uploadCard.classList.add('has-file');
+            } else {
+                uploadContent.style.display = 'flex';
+                uploadSuccess.style.display = 'none';
+                uploadSuccess.classList.remove('visible');
+                uploadZone.classList.remove('has-file');
+                uploadCard.classList.remove('has-file');
+            }
+            updateUploadSummary();
+        });
+
+        uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                input.files = files;
+                input.dispatchEvent(new Event('change'));
+            }
+        });
+
+        
+    });
+}
+
+function removeFile(button) {
+    const uploadCard = button.closest('.upload-card');
+    const uploadZone = uploadCard.querySelector('.upload-zone');
+    const uploadContent = uploadZone.querySelector('.upload-content');
+    const uploadSuccess = uploadZone.querySelector('.upload-success');
+    const fileInput = uploadZone.querySelector('.file-input');
+    
+    fileInput.value = '';
+    uploadContent.style.display = 'flex';
+    uploadSuccess.style.display = 'none';
+    uploadSuccess.classList.remove('visible');
+    uploadZone.classList.remove('has-file');
+    uploadCard.classList.remove('has-file');
+    
+    updateUploadSummary();
+}
+
+function updateUploadSummary() {
+    const fileInputs = document.querySelectorAll('.file-input');
+    const uploadedCount = Array.from(fileInputs).filter(input => input.files.length > 0).length;
+    
+    document.getElementById('fileCount').textContent = uploadedCount;
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = uploadedCount < 6;
+}
+
+function initializeFormSubmission() {
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        const fileInputs = document.querySelectorAll('.file-input');
+        const missingFiles = [];
+        
+        fileInputs.forEach(input => {
+            if (!input.files.length) {
+                const fileName = input.closest('.upload-card').querySelector('h3').textContent;
+                missingFiles.push(fileName);
+            }
+        });
+        
+        if (missingFiles.length > 0) {
+            e.preventDefault();
+            alert(`Please upload the following files:\n• ${missingFiles.join('\n• ')}`);
+            return;
+        }
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const progressSection = document.getElementById('uploadProgress');
+        const progressBar = document.getElementById('progressBar');
+        
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Processing...</span>';
+        submitBtn.disabled = true;
+        progressSection.style.display = 'block';
+        
+        let width = 0;
+        const interval = setInterval(function() {
+            width += Math.random() * 15;
+            if (width >= 90) {
+                width = 90;
+                clearInterval(interval);
+            }
+            progressBar.style.width = width + '%';
+        }, 300);
+    });
+}
+</script>
+{% endblock %}

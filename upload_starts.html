@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Starts Data{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>Upload Starts Data</h1>
+        <p>Upload your starts file to update existing master data</p>
+        <div class="info-note">
+            <i class="fas fa-info-circle"></i>
+            <span>This will update starts counts in your existing master table. Main data processing must be completed first.</span>
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="upload-form">
+        <form method="POST" action="/upload_starts_file" enctype="multipart/form-data" id="startsForm">
+            <div class="single-upload-section">
+                <div class="upload-card-large">
+                    <div class="card-header">
+                        <div class="card-icon starts">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Starts Report</h3>
+                            <p>Monthly/Weekly starts data file</p>
+                        </div>
+                    </div>
+                    <div class="upload-zone" data-file-type="starts_file">
+                        <input type="file" name="starts_file" class="file-input" accept=".xlsx,.xls" required>
+                        <div class="upload-content">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="upload-text">
+                                <h4>Drop your starts file here</h4>
+                                <p>or <span class="upload-link">click to browse</span></p>
+                                <span class="upload-format">Excel format (.xlsx, .xls)</span>
+                            </div>
+                        </div>
+                        <div class="upload-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="file-name"></span>
+                            <button type="button" class="remove-file" onclick="removeFile(this)">×</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-section" id="uploadProgress" style="display: none;">
+                <div class="progress-header">
+                    <h3>Processing Starts Data</h3>
+                    <p>Please wait while we update your master table...</p>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+
+            <!-- Submit Section -->
+            <div class="submit-section">
+                <div class="file-info">
+                    <span id="fileStatus">No file selected</span>
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                    <i class="fas fa-database"></i>
+                    <span>Update Starts Data</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.upload-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
+
+.page-header p {
+    font-size: 1.125rem;
+    color: #64748b;
+    margin: 0 0 1rem 0;
+}
+
+.info-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    border: 1px solid #bfdbfe;
+}
+
+.upload-form {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.single-upload-section {
+    margin-bottom: 2rem;
+}
+
+.upload-card-large {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+.upload-card-large:hover {
+    border-color: #84cc16;
+    box-shadow: 0 4px 12px rgba(132, 204, 22, 0.15);
+}
+
+.upload-card-large.has-file {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.card-icon.starts { 
+    background: linear-gradient(135deg, #84cc16, #65a30d);
+}
+
+.card-info h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.card-info p {
+    margin: 0;
+    font-size: 1rem;
+    color: #64748b;
+}
+
+.upload-zone {
+    position: relative;
+    border: 3px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-zone:hover {
+    border-color: #84cc16;
+    background: #f7fee7;
+}
+
+.upload-zone.dragover {
+    border-color: #84cc16;
+    background: #f0fdf4;
+    transform: scale(1.02);
+}
+
+.upload-zone.has-file {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.file-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.upload-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #84cc16, #65a30d);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 4px 12px rgba(132, 204, 22, 0.3);
+}
+
+.upload-text {
+    text-align: center;
+}
+
+.upload-text h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
+
+.upload-text p {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: #64748b;
+}
+
+.upload-link {
+    color: #84cc16;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.upload-format {
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+.upload-success {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+}
+
+.upload-success.visible {
+    display: flex;
+}
+
+.upload-success i {
+    font-size: 3rem;
+    color: #10b981;
+}
+
+.file-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    word-break: break-all;
+    max-width: 100%;
+}
+
+.remove-file {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.remove-file:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.progress-section {
+    margin-bottom: 2rem;
+}
+
+.progress-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.progress-header h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.progress-header p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #84cc16, #65a30d);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.submit-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.file-info {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.submit-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, #84cc16, #65a30d);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(132, 204, 22, 0.3);
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(132, 204, 22, 0.4);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 768px) {
+    .upload-container {
+        padding: 1rem;
+    }
+    
+    .submit-section {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .upload-zone {
+        padding: 2rem 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFileUpload();
+    initializeFormSubmission();
+});
+
+function initializeFileUpload() {
+    const fileInput = document.querySelector('.file-input');
+    const uploadCard = document.querySelector('.upload-card-large');
+    const uploadZone = document.querySelector('.upload-zone');
+    const uploadContent = document.querySelector('.upload-content');
+    const uploadSuccess = document.querySelector('.upload-success');
+    const fileName = document.querySelector('.file-name');
+
+    fileInput.addEventListener('change', function() {
+        updateFileStatus();
+    });
+
+    uploadZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            updateFileStatus();
+        }
+    });
+
+    uploadZone.addEventListener('click', function(e) {
+        if (!e.target.closest('.remove-file')) {
+            fileInput.click();
+        }
+    });
+}
+
+function updateFileStatus() {
+    const fileInput = document.querySelector('.file-input');
+    const uploadCard = document.querySelector('.upload-card-large');
+    const uploadZone = document.querySelector('.upload-zone');
+    const uploadContent = document.querySelector('.upload-content');
+    const uploadSuccess = document.querySelector('.upload-success');
+    const fileName = document.querySelector('.file-name');
+    const fileStatus = document.getElementById('fileStatus');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileName.textContent = file.name;
+        uploadContent.style.display = 'none';
+        uploadSuccess.style.display = 'flex';
+        uploadSuccess.classList.add('visible');
+        uploadZone.classList.add('has-file');
+        uploadCard.classList.add('has-file');
+        fileStatus.textContent = `Selected: ${file.name}`;
+        submitBtn.disabled = false;
+    } else {
+        uploadContent.style.display = 'flex';
+        uploadSuccess.style.display = 'none';
+        uploadSuccess.classList.remove('visible');
+        uploadZone.classList.remove('has-file');
+        uploadCard.classList.remove('has-file');
+        fileStatus.textContent = 'No file selected';
+        submitBtn.disabled = true;
+    }
+}
+
+function removeFile(button) {
+    const fileInput = document.querySelector('.file-input');
+    fileInput.value = '';
+    updateFileStatus();
+}
+
+function initializeFormSubmission() {
+    document.getElementById('startsForm').addEventListener('submit', function(e) {
+        const fileInput = document.querySelector('.file-input');
+        
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            alert('Please select a starts file to upload.');
+            return;
+        }
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const progressSection = document.getElementById('uploadProgress');
+        const progressBar = document.getElementById('progressBar');
+        
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Processing...</span>';
+        submitBtn.disabled = true;
+        progressSection.style.display = 'block';
+        
+        let width = 0;
+        const interval = setInterval(function() {
+            width += Math.random() * 15;
+            if (width >= 90) {
+                width = 90;
+                clearInterval(interval);
+            }
+            progressBar.style.width = width + '%';
+        }, 300);
+    });
+}
+</script>
+{% endblock %}

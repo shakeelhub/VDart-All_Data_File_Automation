@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block title %}Processing Data - DataSync Pro{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <!-- Processing Status Card -->
+            <div class="card">
+                <div class="card-body p-5" id="statusContainer">
+                    <div class="text-center mb-4">
+                        <div class="processing-indicator mb-3">
+                            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                                <span class="visually-hidden">Processing...</span>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2" id="statusMessage">Processing Your Data</h4>
+                        <p class="text-muted" id="statusDetail">Please wait while we process your uploaded files</p>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="progress-container mb-4">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 10%" id="progressBar"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <small class="text-muted">Processing</small>
+                            <small class="text-muted" id="progressPercentage">10%</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Processing Steps -->
+                    <div class="processing-steps">
+                        <div class="step-item" id="step1">
+                            <div class="step-indicator">
+                                <div class="step-number active">1</div>
+                            </div>
+                            <div class="step-content">
+                                <h6 class="step-title">File Validation</h6>
+                                <p class="step-description text-muted">Reading and validating uploaded files</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item" id="step2">
+                            <div class="step-indicator">
+                                <div class="step-number">2</div>
+                            </div>
+                            <div class="step-content">
+                                <h6 class="step-title">Data Processing</h6>
+                                <p class="step-description text-muted">Cleaning and processing data</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item" id="step3">
+                            <div class="step-indicator">
+                                <div class="step-number">3</div>
+                            </div>
+                            <div class="step-content">
+                                <h6 class="step-title">Data Integration</h6>
+                                <p class="step-description text-muted">Combining data into master table</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item" id="step4">
+                            <div class="step-indicator">
+                                <div class="step-number">4</div>
+                            </div>
+                            <div class="step-content">
+                                <h6 class="step-title">Final Output</h6>
+                                <p class="step-description text-muted">Generating final output files</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Card (Initially Hidden) -->
+            <div class="card mt-4 d-none" id="resultsCard">
+                <div class="card-body p-5 text-center">
+                    <div id="resultsContent"></div>
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Missing Members Modal -->
+    <div class="modal fade" id="inputModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>Missing Members Detected
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning border-0">
+                        <strong id="missingCount"></strong>
+                    </div>
+                    <div id="missingMembersList" class="mb-4"></div>
+                    <div class="bg-light rounded p-4">
+                        <h6 class="fw-semibold mb-2">What would you like to do?</h6>
+                        <p class="text-muted mb-0">You can continue processing and exclude the missing members, or stop to review your data.</p>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" onclick="submitDecision('no')">
+                        <i class="fas fa-stop me-2"></i>Stop Processing
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="submitDecision('yes')">
+                        <i class="fas fa-play me-2"></i>Continue Processing
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.processing-indicator {
+    position: relative;
+}
+
+.progress-container {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.processing-steps {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    width: 2px;
+    height: calc(100% + 1rem);
+    background-color: var(--gray-200);
+    z-index: 0;
+}
+
+.step-indicator {
+    flex-shrink: 0;
+    margin-right: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    background-color: var(--gray-300);
+    color: var(--gray-600);
+    transition: all 0.3s ease;
+}
+
+.step-number.active {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+}
+
+.step-number.completed {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.step-content {
+    flex-grow: 1;
+    padding-top: 0.25rem;
+}
+
+.step-title {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.step-description {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.step-item.active .step-title {
+    color: var(--primary-color);
+}
+
+.step-item.completed .step-title {
+    color: var(--success-color);
+}
+
+.step-item.completed .step-description {
+    color: var(--success-color) !important;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const sessionId = '{{ session_id }}';
+let inputModal;
+let progressValue = 10;
+
+document.addEventListener('DOMContentLoaded', function() {
+    inputModal = new bootstrap.Modal(document.getElementById('inputModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
+    
+    checkStatus();
+    setInterval(checkStatus, 2000);
+    updateProgress();
+});
+
+function updateProgress() {
+    const progressBar = document.getElementById('progressBar');
+    const progressPercentage = document.getElementById('progressPercentage');
+    
+    if (progressValue < 90) {
+        progressValue += Math.random() * 3;
+        progressBar.style.width = progressValue + '%';
+        progressPercentage.textContent = Math.round(progressValue) + '%';
+        
+        // Update step indicators
+        updateStepIndicators(progressValue);
+        setTimeout(updateProgress, 1500);
+    }
+}
+
+function updateStepIndicators(progress) {
+    const steps = ['step1', 'step2', 'step3', 'step4'];
+    
+    if (progress > 25) markStepCompleted('step1');
+    if (progress > 25 && progress <= 50) markStepActive('step2');
+    if (progress > 50) markStepCompleted('step2');
+    if (progress > 50 && progress <= 75) markStepActive('step3');
+    if (progress > 75) markStepCompleted('step3');
+    if (progress > 75) markStepActive('step4');
+}
+
+function markStepActive(stepId) {
+    const step = document.getElementById(stepId);
+    const stepNumber = step.querySelector('.step-number');
+    stepNumber.classList.add('active');
+    step.classList.add('active');
+}
+
+function markStepCompleted(stepId) {
+    const step = document.getElementById(stepId);
+    const stepNumber = step.querySelector('.step-number');
+    stepNumber.classList.remove('active');
+    stepNumber.classList.add('completed');
+    stepNumber.innerHTML = '<i class="fas fa-check"></i>';
+    step.classList.remove('active');
+    step.classList.add('completed');
+}
+
+function checkStatus() {
+    fetch(`/get_status/${sessionId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'input_required') {
+                showInputModal(data);
+            } else if (data.status === 'complete') {
+                showResults(data);
+            } else if (data.status === 'error') {
+                showError(data);
+            } else {
+                updateProcessingStatus(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error checking status:', error);
+        });
+}
+
+function showInputModal(data) {
+    progressValue = 100;
+    document.getElementById('progressBar').style.width = '100%';
+    document.getElementById('progressPercentage').textContent = '100%';
+    document.getElementById('statusMessage').textContent = 'User Input Required';
+    document.getElementById('statusDetail').textContent = 'Please review missing members and choose how to proceed.';
+    
+    document.getElementById('missingCount').textContent = 
+        `${data.missing_count} member(s) are missing from the database.`;
+    
+    const membersList = document.getElementById('missingMembersList');
+    if (data.missing_members && data.missing_members.length > 0) {
+        membersList.innerHTML = `
+            <h6 class="fw-semibold text-danger mb-3">Missing Members:</h6>
+            <div class="d-flex flex-wrap gap-2">
+                ${data.missing_members.map(member => 
+                    `<span class="badge bg-danger-subtle text-danger px-3 py-2">${member}</span>`
+                ).join('')}
+            </div>
+        `;
+    }
+    
+    inputModal.show();
+}
+
+function submitDecision(decision) {
+    fetch(`/submit_decision/${sessionId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ decision: decision })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            inputModal.hide();
+            if (decision === 'no') {
+                showError({ message: 'Processing stopped as requested.' });
+            } else {
+                progressValue = 60;
+                updateProcessingStatus('Continuing processing...');
+                updateProgress();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting decision:', error);
+    });
+}
+
+function updateProcessingStatus(message) {
+    document.getElementById('statusMessage').textContent = message;
+    
+    if (message.includes('Stage 2')) {
+        progressValue = Math.max(progressValue, 70);
+        document.getElementById('statusDetail').textContent = 'Creating master data table...';
+        markStepCompleted('step2');
+        markStepActive('step3');
+    }
+}
+
+function showResults(data) {
+    document.getElementById('statusContainer').style.display = 'none';
+    const resultsCard = document.getElementById('resultsCard');
+    const resultsContent = document.getElementById('resultsContent');
+    
+    // Complete all steps
+    ['step1', 'step2', 'step3', 'step4'].forEach(stepId => {
+        markStepCompleted(stepId);
+    });
+    
+    if (data.success) {
+        resultsContent.innerHTML = `
+            <div class="success-icon mb-4">
+                <div class="bg-success-subtle rounded-circle d-inline-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px;">
+                    <i class="fas fa-check fa-2x text-success"></i>
+                </div>
+            </div>
+            <h4 class="fw-bold text-success mb-3">Processing Completed Successfully!</h4>
+            <p class="text-muted mb-4">Your data has been processed and is ready for viewing and download.</p>
+            <div class="row g-3 text-start">
+                <div class="col-md-6">
+                    <div class="bg-light rounded p-3">
+                        <h6 class="fw-semibold mb-2"><i class="fas fa-database me-2 text-primary"></i>Database Operations</h6>
+                        <ul class="list-unstyled text-muted mb-0">
+                            <li><i class="fas fa-check text-success me-2"></i>Data cleaned and validated</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Records inserted into database</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Master table created</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="bg-light rounded p-3">
+                        <h6 class="fw-semibold mb-2"><i class="fas fa-file-export me-2 text-primary"></i>File Exports</h6>
+                        <ul class="list-unstyled text-muted mb-0">
+                            <li><i class="fas fa-check text-success me-2"></i>Individual CSV files created</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Master CSV file generated</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Ready for download</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        resultsContent.innerHTML = `
+            <div class="warning-icon mb-4">
+                <div class="bg-warning-subtle rounded-circle d-inline-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px;">
+                    <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                </div>
+            </div>
+            <h4 class="fw-bold text-warning mb-3">Processing Stopped</h4>
+            <div class="alert alert-warning border-0">
+                ${data.message.replace(/\n/g, '<br>')}
+            </div>
+        `;
+    }
+    
+    resultsCard.classList.remove('d-none');
+    
+    // Auto-redirect after 8 seconds
+    setTimeout(() => {
+        window.location.href = '/';
+    }, 8000);
+}
+
+function showError(data) {
+    document.getElementById('statusContainer').style.display = 'none';
+    const resultsCard = document.getElementById('resultsCard');
+    const resultsContent = document.getElementById('resultsContent');
+    
+    resultsContent.innerHTML = `
+        <div class="error-icon mb-4">
+            <div class="bg-danger-subtle rounded-circle d-inline-flex align-items-center justify-content-center" 
+                 style="width: 80px; height: 80px;">
+                <i class="fas fa-times fa-2x text-danger"></i>
+            </div>
+        </div>
+        <h4 class="fw-bold text-danger mb-3">Processing Error</h4>
+        <div class="alert alert-danger border-0">
+            ${data.message.replace(/\n/g, '<br>')}
+        </div>
+        <p class="text-muted">Please check your files and try again.</p>
+    `;
+    
+    resultsCard.classList.remove('d-none');
+}
+</script>
+{% endblock %}
